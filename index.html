@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة المخازن - Makhazin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    <!-- Updated Firebase versions for better compatibility and features -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .fade-in { animation: fadeIn 0.3s ease-in; }
@@ -379,7 +380,7 @@
             authDomain: "makhazin-3870e.firebaseapp.com",
             databaseURL: "https://makhazin-3870e-default-rtdb.firebaseio.com",
             projectId: "makhazin-3870e",
-            storageBucket: "makhazin-3870e.firebasestorage.app",
+            storageBucket: "makhazin-3870e.appspot.com",
             messagingSenderId: "582049653395",
             appId: "1:582049653395:web:33c87f77799ca1bc112366",
             measurementId: "G-70JKFQ4K3F"
@@ -391,34 +392,13 @@
         const storage = firebase.storage();
 
         // Foodics Configuration
+        // Note: The provided redirect URL is for the authentication flow, which is not needed here
+        // as we are using a pre-authenticated token.
         const foodicsConfig = {
-            client_id: "9f928198-cf82-4029-b2bd-b8e304947a60",
-            client_secret: "ZXIh4hkQivx2yuR0WPg0YfGnmcmjeG982OZ5qHJl",
-            baseUrl: "https://api.foodics.com/v5"
+            token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI4ZjllYjNmNi02ZWZhLTRmZWYtODk1ZS1kMWJjNDRiYTQ4MWQiLCJqdGkiOiJhZjUwZmU3OWYzYTNhNzM0MTg2ZDYyZWYxMmRlYzQyYjY1YmIzNzdlNzk5MWVjN2VjZjhhMThkNTRhMWM0NTYwNThmODNiYjdhZWM1YTNhZSIsImlhdCI6MTc1NzM0Mjg4Mi42MjY3MywibmJmIjoxNzU3MzQyODgyLjYyNjczLCJleHAiOjE5MTUxMDkyODIuNTk1NTg3LCJzdWIiOiI5ZjkyODA1NC1mZTlkLTRmNzMtYjVhOC1iMjNmZjZjN2FlMmYiLCJzY29wZXMiOlsiZ2VuZXJhbC5yZWFkIiwiaW52ZW50b3J5LnRyYW5zYWN0aW9ucy5yZWFkIiwiaW52ZW50b3J5LnNldHRpbmdzLnJlYWQiLCJpbnZlbnRvcnkuc2V0dGluZ3Mud3JpdGUiLCJpbnZlbnRvcnkudHJhbnNhY3Rpb25zLndyaXRlIl0sImJ1c2luZXNzIjoiOWY5MjgwNTUtMGQ5MC00NTYzLTgyMjItNzNlMWJhMmU4NGE4IiwicmVmZXJlbmNlIjoiMjQ2MDI4In0.baJpKGjlCaa2fmegEA1NVAVYpMvO5-zwmHN_7neRnkJ0cr9534sSBH3ZS42rzkdVEi8L-CH16AN9APmcUROrQiMH7RfCnDWldVCo7cM5DiDc8nuh2xqp4UjIWzzfkeBf8vMf9AAuDIBGFgbExaHuJaX8iixvA5V2LWrKtc0hc5NA2gxJNk6vJcdF08z_Xx3iNVvgje3heidklWF-Im2nsdaTF9iopjyCs3SuAFIWwjYqVs_otCKbhGW_8NHcUYXkFIzsvnCgNuGOATofgPV4Y48w57oc6o1uTGwYjqwxT6JtxrhT0EnNFBeeR2ueAXrG4FlFZAYMyCqGTk7DPwDCFWa2J59P9uzqYcbSaf59E3AOkP4Yp3vipDAnE-rP1kmEBPsp9jYtbMUIrQI0wP6Yh-Ni-UCTXKOwnMNRxXutS2DIxpWmFRZw_FefXEOKRVmNxY7T5s4nPRGxnIkCRYJYJQmrH2hfXLXhf1xJ9LG_38S_i0tYaGDR356F2XRnhl0d7ecBVOxaUkit1LAddYLpa6PQKUOt38OFeBLHayOtCgTlxc5TVFFGbysVVgqUVq7GgM-58Z9yrzvSk2zR55oX2Mha-vm8_ydm-JxnhseDF6iHaRW7Hrg_2FbTWyMUiBkuX40EL47vQ2nfY2yZ-tGMxJRt4iNjhd6ccATZQ7VUORM",
+            baseUrl: "https://api-sandbox.foodics.com/v5"
         };
-
-        // Employee codes with pronunciations
-        const employees = {
-            '1001': { name: 'عايدة', pronunciation: 'Ayda' },
-            '1002': { name: 'سارة', pronunciation: 'Sarah' },
-            '1003': { name: 'اوماجي', pronunciation: 'Omaji' },
-            '1004': { name: 'شاكيلا', pronunciation: 'Shakila' },
-            '1005': { name: 'محمود', pronunciation: 'Mahmoud' },
-            '1006': { name: 'جون', pronunciation: 'John' },
-            '1007': { name: 'جوهاري', pronunciation: 'Johari' },
-            '1008': { name: 'ازيل', pronunciation: 'Azil' },
-            '1009': { name: 'رمزي', pronunciation: 'Ramzi' },
-            '1010': { name: 'رانيا', pronunciation: 'Rania' },
-            '1011': { name: 'اسماء', pronunciation: 'Asma' },
-            '1012': { name: 'فيروز', pronunciation: 'Firouz' },
-            '1013': { name: 'ناصر', pronunciation: 'Nasser' },
-            '1014': { name: 'يوسف', pronunciation: 'Youssef' },
-            '1015': { name: 'نعيم', pronunciation: 'Naeem' },
-            '1016': { name: 'أحمد', pronunciation: 'Ahmed' },
-            '1017': { name: 'نوزيا', pronunciation: 'Nozia' },
-            '1018': { name: 'اسحاق', pronunciation: 'Ishaq' }
-        };
-
+        
         // Global variables
         let currentEmployee = null;
         let currentLanguage = 'ar';
@@ -427,6 +407,92 @@
         let currentProduct = null;
         let clickCount = 0;
         let selectedProducts = [];
+        let foodicsProductsMap = {}; // New global variable to map SKUs to Foodics UUIDs
+
+        // Fetch products from Foodics API and build the SKU -> UUID map
+        async function fetchFoodicsProducts() {
+            console.log("Fetching products from Foodics...");
+            try {
+                const response = await fetch(`${foodicsConfig.baseUrl}/products`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${foodicsConfig.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.data) {
+                    data.data.forEach(product => {
+                        if (product.sku && product.sku.length > 0) {
+                            // Store the Foodics product UUID based on the SKU
+                            foodicsProductsMap[product.sku] = product.id;
+                        }
+                    });
+                    console.log(`Successfully fetched ${Object.keys(foodicsProductsMap).length} products from Foodics.`);
+                }
+            } catch (error) {
+                console.error('Error fetching products from Foodics:', error);
+                alert(currentLanguage === 'ar' ? 'خطأ في جلب المنتجات من Foodics. قد لا يتم تحديث المخزون.' : 'Error fetching products from Foodics. Inventory may not be updated.');
+            }
+        }
+        
+        // Update inventory in Foodics
+        async function updateFoodicsInventory(cartItems) {
+            console.log("Updating Foodics inventory...");
+            
+            const now = new Date();
+            const payload = {
+                type: "StockOut", // Use StockOut type for items taken out of inventory
+                business_date: now.toISOString().split('T')[0], // YYYY-MM-DD format
+                notes: `Stock out transaction for employee: ${currentEmployee.name} (${currentEmployee.code})`,
+                inventory_items: []
+            };
+
+            for (const item of cartItems) {
+                const foodicsId = foodicsProductsMap[item.sku];
+                if (foodicsId) {
+                    payload.inventory_items.push({
+                        product_id: foodicsId,
+                        quantity: parseFloat(item.quantity)
+                    });
+                } else {
+                    console.warn(`Product with SKU ${item.sku} not found in Foodics mapping. Skipping.`);
+                }
+            }
+            
+            if (payload.inventory_items.length === 0) {
+                console.warn('No items to update in Foodics. All items were skipped.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${foodicsConfig.baseUrl}/inventory/transactions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${foodicsConfig.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Foodics API Error:', errorData);
+                    throw new Error(`Failed to update Foodics inventory. Status: ${response.status}, Message: ${JSON.stringify(errorData)}`);
+                }
+                
+                console.log("Successfully updated Foodics inventory.");
+            } catch (error) {
+                console.error('Error updating Foodics inventory:', error);
+                throw new Error(currentLanguage === 'ar' ? 'حدث خطأ أثناء تحديث مخزون Foodics' : 'An error occurred while updating Foodics inventory');
+            }
+        }
 
         // Language system
         function toggleLanguage() {
@@ -662,9 +728,6 @@
             document.getElementById('loadingModal').classList.add('flex');
             
             try {
-                // Simulate API calls and processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
                 // Save order to Firebase
                 const orderData = {
                     employee: currentEmployee,
@@ -680,11 +743,8 @@
                 
                 await database.ref('orders').push(orderData);
                 
-                // Update Foodics inventory (simulated)
-                for (const item of cart) {
-                    console.log(`Updating Foodics inventory for SKU: ${item.sku}, Quantity: -${item.quantity}`);
-                    // In real implementation, make API call to Foodics here
-                }
+                // Update Foodics inventory
+                await updateFoodicsInventory(cart);
                 
                 // Clear cart
                 cart = [];
@@ -706,7 +766,7 @@
                 console.error('Error processing order:', error);
                 document.getElementById('loadingModal').classList.add('hidden');
                 document.getElementById('loadingModal').classList.remove('flex');
-                alert(currentLanguage === 'ar' ? 'حدث خطأ في معالجة الطلب' : 'Error processing order');
+                alert(error.message); // Show a more specific error message
             }
         }
 
@@ -1216,7 +1276,7 @@
                             <th style="width: 10%;">الوحدة<br>Unit</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="reportsTableBody">
                         ${reportsTable.innerHTML}
                     </tbody>
                 </table>
@@ -1241,9 +1301,34 @@
                 }, 1000);
             }, 100);
         }
+        
+        // Employee codes with pronunciations
+        const employees = {
+            '1001': { name: 'عايدة', pronunciation: 'Ayda' },
+            '1002': { name: 'سارة', pronunciation: 'Sarah' },
+            '1003': { name: 'اوماجي', pronunciation: 'Omaji' },
+            '1004': { name: 'شاكيلا', pronunciation: 'Shakila' },
+            '1005': { name: 'محمود', pronunciation: 'Mahmoud' },
+            '1006': { name: 'جون', pronunciation: 'John' },
+            '1007': { name: 'جوهاري', pronunciation: 'Johari' },
+            '1008': { name: 'ازيل', pronunciation: 'Azil' },
+            '1009': { name: 'رمزي', pronunciation: 'Ramzi' },
+            '1010': { name: 'رانيا', pronunciation: 'Rania' },
+            '1011': { name: 'اسماء', pronunciation: 'Asma' },
+            '1012': { name: 'فيروز', pronunciation: 'Firouz' },
+            '1013': { name: 'ناصر', pronunciation: 'Nasser' },
+            '1014': { name: 'يوسف', pronunciation: 'Youssef' },
+            '1015': { name: 'نعيم', pronunciation: 'Naeem' },
+            '1016': { name: 'أحمد', pronunciation: 'Ahmed' },
+            '1017': { name: 'نوزيا', pronunciation: 'Nozia' },
+            '1018': { name: 'اسحاق', pronunciation: 'Ishaq' }
+        };
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
+            // Fetch products from Foodics as soon as the page loads
+            fetchFoodicsProducts();
+            
             document.getElementById('langToggle').addEventListener('click', toggleLanguage);
             
             // Enter key support for login
@@ -1273,5 +1358,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97bfb463d4827cdb',t:'MTc1NzM0NzcwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
