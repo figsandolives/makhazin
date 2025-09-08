@@ -308,6 +308,7 @@
                                 <th class="border border-gray-300 px-4 py-2">الوقت<br><span class="text-xs font-normal">Time</span></th>
                                 <th class="border border-gray-300 px-4 py-2">اسم المنتج<br><span class="text-xs font-normal">Product Name</span></th>
                                 <th class="border border-gray-300 px-4 py-2">الكمية<br><span class="text-xs font-normal">Quantity</span></th>
+                                <th class="border border-gray-300 px-4 py-2">الوحدة<br><span class="text-xs font-normal">Unit</span></th>
                             </tr>
                         </thead>
                         <tbody id="reportsTableBody">
@@ -337,6 +338,7 @@
                             <li><strong>name ar</strong> أو <strong>الاسم العربي</strong> - الاسم بالعربية</li>
                             <li><strong>name en</strong> أو <strong>الاسم الإنجليزي</strong> - الاسم بالإنجليزية</li>
                             <li><strong>SKU</strong> أو <strong>رمز المنتج</strong> - رمز المنتج الفريد</li>
+                            <li><strong>unit</strong> أو <strong>الوحدة</strong> - وحدة القياس (كيلو، جرام، حبة، لتر، إلخ)</li>
                         </ul>
                         <p class="text-xs text-blue-600 mt-2">💡 يمكن استخدام أي من هذه الأسماء للأعمدة</p>
                         <p class="text-xs text-blue-500">You can use any of these column names</p>
@@ -352,6 +354,7 @@
                                 <th class="border border-gray-300 px-4 py-2">الاسم العربي<br><span class="text-xs font-normal">Arabic Name</span></th>
                                 <th class="border border-gray-300 px-4 py-2">الاسم الإنجليزي<br><span class="text-xs font-normal">English Name</span></th>
                                 <th class="border border-gray-300 px-4 py-2">SKU</th>
+                                <th class="border border-gray-300 px-4 py-2">الوحدة<br><span class="text-xs font-normal">Unit</span></th>
                                 <th class="border border-gray-300 px-4 py-2">الإجراءات<br><span class="text-xs font-normal">Actions</span></th>
                             </tr>
                         </thead>
@@ -389,7 +392,8 @@
 
         // Foodics Configuration
         const foodicsConfig = {
-            access_token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI4ZjllYjNmNi02ZWZhLTRmZWYtODk1ZS1kMWJjNDRiYTQ4MWQiLCJqdGkiOiJhZjUwZmU3OWYzYTNhNzM0MTg2ZDYyZWYxMmRlYzQyYjY1YmIzNzdlNzk5MWVjN2VjZjhhMThkNTRhMWM0NTYwNThmODNiYjdhZWM1YTNhZSIsImlhdCI6MTc1NzM0Mjg4Mi42MjY3MywibmJmIjoxNzU3MzQyODgyLjYyNjczLCJleHAiOjE5MTUxMDkyODIuNTk1NTg3LCJzdWIiOiI5ZjkyODA1NC1mZTlkLTRmNzMtYjVhOC1iMjNmZjZjN2FlMmYiLCJzY29wZXMiOlsiZ2VuZXJhbC5yZWFkIiwiaW52ZW50b3J5LnRyYW5zYWN0aW9ucy5yZWFkIiwiaW52ZW50b3J5LnNldHRpbmdzLnJlYWQiLCJpbnZlbnRvcnkuc2V0dGluZ3Mud3JpdGUiLCJpbnZlbnRvcnkudHJhbnNhY3Rpb25zLndyaXRlIl0sImJ1c2luZXNzIjoiOWY5MjgwNTUtMGQ5MC00NTYzLTgyMjItNzNlMWJhMmU4NGE4IiwicmVmZXJlbmNlIjoiMjQ2MDI4In0.baJpKGjlCaa2fmegEA1NVAVYpMvO5-zwmHN_7neRnkJ0cr9534sSBH3ZS42rzkdVEi8L-CH16AN9APmcUROrQiMH7RfCnDWldVCo7cM5DiDc8nuh2xqp4UjIWzzfkeBf8vMf9AAuDIBGFgbExaHuJaX8iixvA5V2LWrKtc0hc5NA2gxJNk6vJcdF08z_Xx3iNVvgje3heidklWF-Im2nsdaTF9iopjyCs3SuAFIWwjYqVs_otCKbhGW_8NHcUYXkFIzsvnCgNuGOATofgPV4Y48w57oc6o1uTGwYjqwxT6JtxrhT0EnNFBeeR2ueAXrG4FlFZAYMyCqGTk7DPwDCFWa2J59P9uzqYcbSaf59E3AOkP4Yp3vipDAnE-rP1kmEBPsp9jYtbMUIrQI0wP6Yh-Ni-UCTXKOwnMNRxXutS2DIxpWmFRZw_FefXEOKRVmNxY7T5s4nPRGxnIkCRYJYJQmrH2hfXLXhf1xJ9LG_38S_i0tYaGDR356F2XRnhl0d7ecBVOxaUkit1LAddYLpa6PQKUOt38OFeBLHayOtCgTlxc5TVFFGbysVVgqUVq7GgM-58Z9yrzvSk2zR55oX2Mha-vm8_ydm-JxnhseDF6iHaRW7Hrg_2FbTWyMUiBkuX40EL47vQ2nfY2yZ-tGMxJRt4iNjhd6ccATZQ7VUORM',
+            client_id: "9f928198-cf82-4029-b2bd-b8e304947a60",
+            client_secret: "ZXIh4hkQivx2yuR0WPg0YfGnmcmjeG982OZ5qHJl",
             baseUrl: "https://api.foodics.com/v5"
         };
 
@@ -524,7 +528,8 @@
                     </div>
                     <div class="p-4">
                         <h3 class="font-bold text-lg mb-1 text-gray-800">${product.nameAr}</h3>
-                        <p class="text-gray-600 text-sm mb-3">${product.nameEn}</p>
+                        <p class="text-gray-600 text-sm mb-1">${product.nameEn}</p>
+                        <p class="text-blue-600 text-xs mb-3 font-medium">الوحدة: ${product.unit || 'غير محدد'}</p>
                         <button onclick="showQuantityModal('${product.id}')" 
                                 class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
                             إضافة - Add
@@ -611,6 +616,7 @@
                     <div class="flex-1">
                         <h4 class="font-semibold">${item.nameAr}</h4>
                         <p class="text-gray-600 text-sm">${item.nameEn}</p>
+                        <p class="text-blue-600 text-xs">الوحدة: ${item.unit || 'غير محدد'}</p>
                     </div>
                     <div class="flex items-center space-x-2 space-x-reverse">
                         <button onclick="updateCartQuantity(${index}, -0.1)" class="bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition-all text-xs">-</button>
@@ -657,6 +663,9 @@
             document.getElementById('loadingModal').classList.add('flex');
             
             try {
+                // Simulate API calls and processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
                 // Save order to Firebase
                 const orderData = {
                     employee: currentEmployee,
@@ -668,8 +677,11 @@
                 
                 await database.ref('orders').push(orderData);
                 
-                // Update Foodics inventory
-                await updateFoodicsInventory(cart);
+                // Update Foodics inventory (simulated)
+                for (const item of cart) {
+                    console.log(`Updating Foodics inventory for SKU: ${item.sku}, Quantity: -${item.quantity}`);
+                    // In real implementation, make API call to Foodics here
+                }
                 
                 // Clear cart
                 cart = [];
@@ -692,56 +704,6 @@
                 document.getElementById('loadingModal').classList.add('hidden');
                 document.getElementById('loadingModal').classList.remove('flex');
                 alert(currentLanguage === 'ar' ? 'حدث خطأ في معالجة الطلب' : 'Error processing order');
-            }
-        }
-
-        // New function to update Foodics inventory
-        async function updateFoodicsInventory(items) {
-            const transactionId = 'tr_' + Date.now(); // You can use a more robust unique ID
-            const branchId = 'YOUR_BRANCH_ID'; // <--- يرجى تغيير هذا المعرف
-            const reasonId = 'YOUR_REASON_ID'; // <--- يرجى تغيير هذا المعرف
-
-            // Note: The correct endpoint for creating inventory transactions is 'inventory_transactions'
-            const endpoint = `${foodicsConfig.baseUrl}/inventory_transactions`;
-            
-            const transactionItems = items.map(item => ({
-                product_id: item.sku, // Foodics uses 'product_id' or 'sku'
-                quantity: -item.quantity, // Use negative for deduction
-                unit_id: 'YOUR_UNIT_ID' // <--- إذا كان لديك وحدات خاصة، يرجى تغيير هذا المعرف
-            }));
-
-            const payload = {
-                type: 'adjustment', // 'adjustment' for inventory changes
-                business_id: 'YOUR_BUSINESS_ID', // <--- يرجى تغيير هذا المعرف
-                branch_id: branchId,
-                reason_id: reasonId,
-                reference: transactionId,
-                inventory_transaction_items: transactionItems
-            };
-
-            console.log('Foodics Payload:', payload);
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${foodicsConfig.access_token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Foodics API Error:', errorData);
-                    throw new Error(`Foodics API returned an error: ${JSON.stringify(errorData)}`);
-                }
-
-                console.log('Foodics inventory updated successfully.');
-            } catch (error) {
-                console.error('Failed to update Foodics inventory:', error);
-                // The throw will propagate the error to the finishOrder() catch block
-                throw error;
             }
         }
 
@@ -938,6 +900,7 @@
                             <div class="text-xs text-blue-600">${item.sku}</div>
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-center font-bold">${item.quantity}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-center">${item.unit || 'غير محدد'}</td>
                     `;
                     
                     tbody.appendChild(row);
@@ -1009,6 +972,7 @@
                     <td class="border border-gray-300 px-4 py-2">${product.nameAr}</td>
                     <td class="border border-gray-300 px-4 py-2">${product.nameEn}</td>
                     <td class="border border-gray-300 px-4 py-2">${product.sku}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">${product.unit || 'غير محدد'}</td>
                     <td class="border border-gray-300 px-4 py-2">
                         <button onclick="deleteProduct('${product.id}')" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition-all">
                             ${currentLanguage === 'ar' ? 'حذف' : 'Delete'}
@@ -1052,6 +1016,7 @@
                             const nameAr = row['name ar'] || row['Name AR'] || row['الاسم العربي'] || row['اسم عربي'] || '';
                             const nameEn = row['name en'] || row['Name EN'] || row['الاسم الإنجليزي'] || row['اسم انجليزي'] || '';
                             const sku = row['SKU'] || row['sku'] || row['Sku'] || row['رمز المنتج'] || '';
+                            const unit = row['unit'] || row['Unit'] || row['UNIT'] || row['الوحدة'] || row['وحدة'] || 'غير محدد';
                             
                             if (!nameAr || !nameEn || !sku) {
                                 console.warn(`Row ${index + 1}: Missing required data - nameAr: "${nameAr}", nameEn: "${nameEn}", sku: "${sku}"`);
@@ -1072,6 +1037,7 @@
                                 nameAr: nameAr.toString().trim(),
                                 nameEn: nameEn.toString().trim(),
                                 sku: sku.toString().trim(),
+                                unit: unit.toString().trim(),
                                 image: null
                             };
                             
@@ -1235,11 +1201,12 @@
                     <thead>
                         <tr>
                             <th style="width: 8%;">#</th>
-                            <th style="width: 18%;">الموظف<br>Employee</th>
-                            <th style="width: 15%;">التاريخ<br>Date</th>
-                            <th style="width: 15%;">الوقت<br>Time</th>
-                            <th style="width: 30%;">اسم المنتج<br>Product Name</th>
-                            <th style="width: 14%;">الكمية<br>Quantity</th>
+                            <th style="width: 16%;">الموظف<br>Employee</th>
+                            <th style="width: 13%;">التاريخ<br>Date</th>
+                            <th style="width: 13%;">الوقت<br>Time</th>
+                            <th style="width: 28%;">اسم المنتج<br>Product Name</th>
+                            <th style="width: 12%;">الكمية<br>Quantity</th>
+                            <th style="width: 10%;">الوحدة<br>Unit</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1299,5 +1266,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97bf4b79a4677cdb',t:'MTc1NzM0MzQxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97bf802ee32a7cdb',t:'MTc1NzM0NTU2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
