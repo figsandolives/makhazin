@@ -1,1203 +1,642 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام إدارة المخازن - Makhazin</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-.fade-in { animation: fadeIn 0.3s ease-in; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.slide-up { animation: slideUp 0.3s ease-out; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.product-card { transition: all 0.3s ease; }
-.product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-.floating-cart { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-.modal { backdrop-filter: blur(5px); }
-.loading-spinner { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-/* Print Styles */
-@media print {
-body * { visibility: hidden; }
-.print-area, .print-area * { visibility: visible; }
-.print-area {
-position: absolute;
-left: 0;
-top: 0;
-width: 100%;
-background: white;
-padding: 20px;
-font-size: 12px;
- }
-.print-header {
-text-align: center;
-margin-bottom: 30px;
-border-bottom: 2px solid #333;
-padding-bottom: 15px;
- }
-.print-table {
-width: 100%;
-border-collapse: collapse;
-margin-top: 20px;
- }
-.print-table th, .print-table td {
-border: 1px solid #333;
-padding: 8px;
-text-align: right;
-font-size: 11px;
- }
-.print-table th {
-background-color: #f0f0f0;
-font-weight: bold;
- }
-.print-footer {
-margin-top: 30px;
-text-align: center;
-font-size: 10px;
-color: #666;
- }
- }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة المخازن - Foodics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .product-card { transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .floating-cart { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .modal { backdrop-filter: blur(5px); }
+        .loading-spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* Print Styles */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                background: white;
+                padding: 20px;
+                font-size: 12px;
+            }
+            .print-header {
+                text-align: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #333;
+                padding-bottom: 15px;
+            }
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #333;
+                padding: 8px;
+                text-align: right;
+                font-size: 11px;
+            }
+            .print-table th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+            }
+            .print-footer {
+                margin-top: 30px;
+                text-align: center;
+                font-size: 10px;
+                color: #666;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
 
-<!-- Admin Button (Hidden by default) -->
-<div id="adminBtn" class="fixed top-4 right-4 z-50 hidden">
-<button onclick="showAdminPanel()" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-all">
- إدارة - Admin
-</button>
-</div>
+    <!-- Admin Button (Hidden by default) -->
+    <div id="adminBtn" class="fixed top-4 right-4 z-50 hidden">
+        <button onclick="showAdminPanel()" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-all">
+            إدارة - Admin
+        </button>
+    </div>
 
-<!-- Login Screen -->
-<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
-<div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md slide-up">
-<div class="text-center mb-8">
-<h1 class="text-3xl font-bold text-gray-800 mb-2">نظام إدارة المخازن</h1>
-<h2 class="text-2xl font-bold text-gray-600 mb-4">Inventory Management System</h2>
-<p class="text-gray-600">أدخل رمز الدخول الخاص بك</p>
-<p class="text-gray-500 text-sm">Enter your access code</p>
-</div>
-<div class="space-y-6">
-<input type="text" id="employeeCode" placeholder="رمز الدخول - Access Code"
-class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-center text-xl font-mono">
-<button onclick="login()" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105">
- دخول - Login
-</button>
-</div>
-</div>
-</div>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md slide-up">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">نظام إدارة المخازن</h1>
+                <h2 class="text-2xl font-bold text-gray-600 mb-4">Inventory Management System</h2>
+                <p class="text-gray-600">أدخل رمز الدخول الخاص بك</p>
+                <p class="text-gray-500 text-sm">Enter your access code</p>
+            </div>
+            <div class="space-y-6">
+                <input type="text" id="employeeCode" placeholder="رمز الدخول - Access Code" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-center text-xl font-mono">
+                <button onclick="login()" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105">
+                    دخول - Login
+                </button>
+            </div>
+        </div>
+    </div>
 
-<!-- Main App Screen -->
-<div id="mainScreen" class="hidden min-h-screen">
-<!-- Header -->
-<header class="bg-white shadow-lg p-4">
-<div class="max-w-7xl mx-auto flex justify-between items-center">
-<div class="flex items-center space-x-4 space-x-reverse">
-<div class="text-center">
-<h2 class="text-2xl font-bold text-gray-800">مرحباً</h2>
-<p class="text-sm text-gray-600">Welcome</p>
-</div>
-<span id="employeeName" class="text-xl text-blue-600 font-semibold"></span>
-</div>
-<button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
- خروج - Logout
-</button>
-</div>
-</header>
-<!-- Search Bar -->
-<div class="max-w-7xl mx-auto p-4">
-<div class="bg-white rounded-lg shadow-md p-4 mb-6">
-<input type="text" id="searchInput" placeholder="البحث عن المنتجات - Search products..."
-class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-oninput="searchProducts()">
-</div>
-</div>
-<!-- Products Grid -->
-<div class="max-w-7xl mx-auto p-4">
-<div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-<!-- Products will be loaded here -->
-</div>
-</div>
-</div>
+    <!-- Main App Screen -->
+    <div id="mainScreen" class="hidden min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-lg p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="text-center">
+                        <h2 class="text-2xl font-bold text-gray-800">مرحباً</h2>
+                        <p class="text-sm text-gray-600">Welcome</p>
+                    </div>
+                    <span id="employeeName" class="text-xl text-blue-600 font-semibold"></span>
+                </div>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                    خروج - Logout
+                </button>
+            </div>
+        </header>
 
-<!-- Floating Cart Button -->
-<div id="floatingCart" class="floating-cart hidden">
-<button onclick="showCart()" class="bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all transform hover:scale-110">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
-</svg>
-<span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
-</button>
-</div>
+        <!-- Search Bar -->
+        <div class="max-w-7xl mx-auto p-4">
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                <input type="text" id="searchInput" placeholder="البحث عن المنتجات - Search products..." 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                       oninput="searchProducts()">
+            </div>
+        </div>
 
-<!-- Quantity Modal -->
-<div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
-<div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 slide-up">
-<div class="text-center">
-<img id="modalProductImage" src="" alt="" class="w-32 h-32 object-cover rounded-lg mx-auto mb-4">
-<h3 id="modalProductName" class="text-xl font-bold text-gray-800 mb-4"></h3>
-<div class="mb-6">
-<label class="block text-gray-700 mb-2">الكمية - Quantity</label>
-<input type="number" id="quantityInput" min="0.1" step="0.1" value="1"
-class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-center text-xl">
-<p class="text-xs text-gray-500 mt-1">يمكن استخدام الأرقام العشرية (مثل: 1.5, 2.25)</p>
-<p class="text-xs text-gray-400">Decimal numbers supported (e.g: 1.5, 2.25)</p>
-</div>
-<div class="flex space-x-4 space-x-reverse">
-<button onclick="closeQuantityModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
- إلغاء - Cancel
-</button>
-<button onclick="addToCart()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all">
- إضافة - Add
-</button>
-</div>
-</div>
-</div>
-</div>
+        <!-- Products Grid -->
+        <div class="max-w-7xl mx-auto p-4">
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </div>
 
-<!-- Cart Modal -->
-<div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
-<div class="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto slide-up">
-<h3 class="text-2xl font-bold text-gray-800 mb-2 text-center">سلة المنتجات</h3>
-<p class="text-lg text-gray-600 mb-6 text-center">Shopping Cart</p>
-<div id="cartItems" class="space-y-4 mb-6">
-<!-- Cart items will be loaded here -->
-</div>
-<div class="flex space-x-4 space-x-reverse">
-<button onclick="closeCart()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
- متابعة التسجيل<br><span class="text-sm">Continue Shopping</span>
-</button>
-<button onclick="finishOrder()" class="flex-1 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-all">
- إنهاء التسجيل<br><span class="text-sm">Finish Order</span>
-</button>
-</div>
-</div>
-</div>
+    <!-- Floating Cart Button -->
+    <div id="floatingCart" class="floating-cart hidden">
+        <button onclick="showCart()" class="bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all transform hover:scale-110">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
+            </svg>
+            <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
+        </button>
+    </div>
 
-<!-- Loading Modal -->
-<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
-<div class="bg-white rounded-2xl p-8 text-center slide-up">
-<div class="loading-spinner w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-<p class="text-gray-700 text-lg">انتظر قليلاً...</p>
-<p class="text-gray-500">Please wait...</p>
-</div>
-</div>
+    <!-- Quantity Modal -->
+    <div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 slide-up">
+            <div class="text-center">
+                <img id="modalProductImage" src="" alt="" class="w-32 h-32 object-cover rounded-lg mx-auto mb-4">
+                <h3 id="modalProductName" class="text-xl font-bold text-gray-800 mb-4"></h3>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">الكمية - Quantity</label>
+                    <input type="number" id="quantityInput" min="0.1" step="0.1" value="1" 
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-center text-xl">
+                    <p class="text-xs text-gray-500 mt-1">يمكن استخدام الأرقام العشرية (مثل: 1.5, 2.25)</p>
+                    <p class="text-xs text-gray-400">Decimal numbers supported (e.g: 1.5, 2.25)</p>
+                </div>
+                <div class="flex space-x-4 space-x-reverse">
+                    <button onclick="closeQuantityModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
+                        إلغاء - Cancel
+                    </button>
+                    <button onclick="addToCart()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                        إضافة - Add
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<!-- Success Modal -->
-<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
-<div class="bg-white rounded-2xl p-8 text-center slide-up">
-<div class="text-green-500 text-6xl mb-4">✓</div>
-<h3 class="text-2xl font-bold text-gray-800 mb-2">شكراً</h3>
-<p class="text-lg text-gray-600 mb-4">Thank you</p>
-<p id="successEmployeeName" class="text-xl text-blue-600 font-semibold mb-4"></p>
-<p class="text-gray-700 mb-2">تم تسجيل المنتجات المصروفة بنجاح</p>
-<p class="text-gray-500 text-sm">Products have been successfully recorded</p>
-<button onclick="closeSuccessModal()" class="mt-6 bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all">
- موافق - OK
-</button>
-</div>
-</div>
+    <!-- Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto slide-up">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2 text-center">سلة المنتجات</h3>
+            <p class="text-lg text-gray-600 mb-6 text-center">Shopping Cart</p>
+            <div id="cartItems" class="space-y-4 mb-6">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div class="flex space-x-4 space-x-reverse">
+                <button onclick="closeCart()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
+                    متابعة التسجيل<br><span class="text-sm">Continue Shopping</span>
+                </button>
+                <button onclick="finishOrder()" class="flex-1 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-all">
+                    إنهاء التسجيل<br><span class="text-sm">Finish Order</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-<!-- Admin Panel -->
-<div id="adminPanel" class="hidden min-h-screen bg-gray-100">
-<header class="bg-white shadow-lg p-4">
-<div class="max-w-7xl mx-auto flex justify-between items-center">
-<div>
-<h2 class="text-2xl font-bold text-gray-800">لوحة الإدارة</h2>
-<p class="text-gray-600">Admin Panel</p>
-</div>
-<button onclick="hideAdminPanel()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
- إغلاق - Close
-</button>
-</div>
-</header>
-<div class="max-w-7xl mx-auto p-6">
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-<button onclick="showReports()" class="bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
-<h3 class="text-xl font-bold mb-2">تقارير الصرف</h3>
-<p class="text-blue-100 mb-2">Expense Reports</p>
-<p class="text-sm">عرض جميع عمليات الصرف</p>
-<p class="text-xs text-blue-200">View all expense operations</p>
-</button>
-<button onclick="showProductManagement()" class="bg-green-500 text-white p-6 rounded-lg hover:bg-green-600 transition-all transform hover:scale-105">
-<h3 class="text-xl font-bold mb-2">منتجات الصرف</h3>
-<p class="text-green-100 mb-2">Product Management</p>
-<p class="text-sm">إدارة المنتجات المتاحة</p>
-<p class="text-xs text-green-200">Manage available products</p>
-</button>
-</div>
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 text-center slide-up">
+            <div class="loading-spinner w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-gray-700 text-lg">انتظر قليلاً...</p>
+            <p class="text-gray-500">Please wait...</p>
+        </div>
+    </div>
 
-<!-- Reports Section -->
-<div id="reportsSection" class="hidden bg-white rounded-lg shadow-lg p-6">
-<h3 class="text-xl font-bold mb-2">تقارير الصرف</h3>
-<p class="text-gray-600 mb-4">Expense Reports</p>
-<!-- Filters -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-<select id="employeeFilter" class="px-4 py-2 border rounded-lg">
-<option value="">جميع الموظفين - All Employees</option>
-</select>
-<input type="date" id="dateFilter" class="px-4 py-2 border rounded-lg">
-<div class="relative">
-<div class="bg-white border rounded-lg cursor-pointer flex items-center px-4 py-2 hover:bg-gray-50" onclick="toggleProductFilter()">
-<span id="productFilterText" class="text-gray-500 flex-1">اختر المنتجات - Select Products</span>
-<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-</svg>
-</div>
-</div>
-<button onclick="applyFilters()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
- تطبيق الفلتر - Apply Filter
-</button>
-<button onclick="clearAllFilters()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all">
- مسح الفلاتر - Clear Filters
-</button>
-<button onclick="printReports()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
- طباعة - Print
-</button>
-</div>
-<!-- Product Filter Dropdown -->
-<div id="productFilterDropdown" class="hidden bg-white border rounded-lg shadow-lg p-4 mb-4 max-h-80 overflow-hidden">
-<div class="flex justify-between items-center mb-3">
-<h4 class="font-bold">اختر المنتجات - Select Products</h4>
-<div class="flex space-x-2 space-x-reverse">
-<button onclick="selectAllProducts()" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">
- اختر الكل - Select All
-</button>
-<button onclick="clearProductFilter()" class="bg-gray-500 text-white px-2 py-1 rounded text-xs hover:bg-gray-600">
- مسح الكل - Clear All
-</button>
-</div>
-</div>
-<!-- Search in products -->
-<div class="mb-3">
-<input type="text" id="productFilterSearch" placeholder="البحث في المنتجات - Search products..."
-class="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-oninput="searchInProductFilter()">
-</div>
-<div id="productFilterOptions" class="space-y-2 max-h-40 overflow-y-auto">
-<!-- Product options will be loaded here -->
-</div>
-<div class="flex justify-end mt-4">
-<button onclick="toggleProductFilter()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
- تم - Done
-</button>
-</div>
-</div>
-<!-- Reports Table -->
-<div class="overflow-x-auto">
-<table class="w-full border-collapse border border-gray-300">
-<thead>
-<tr class="bg-gray-100">
-<th class="border border-gray-300 px-4 py-2">#</th>
-<th class="border border-gray-300 px-4 py-2">الموظف<br><span class="text-xs font-normal">Employee</span></th>
-<th class="border border-gray-300 px-4 py-2">التاريخ<br><span class="text-xs font-normal">Date</span></th>
-<th class="border border-gray-300 px-4 py-2">الوقت<br><span class="text-xs font-normal">Time</span></th>
-<th class="border border-gray-300 px-4 py-2">اسم المنتج<br><span class="text-xs font-normal">Product Name</span></th>
-<th class="border border-gray-300 px-4 py-2">الكمية<br><span class="text-xs font-normal">Quantity</span></th>
-<th class="border border-gray-300 px-4 py-2">الوحدة<br><span class="text-xs font-normal">Unit</span></th>
-</tr>
-</thead>
-<tbody id="reportsTableBody">
-<!-- Reports will be loaded here -->
-</tbody>
-</table>
-</div>
-</div>
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 text-center slide-up">
+            <div class="text-green-500 text-6xl mb-4">✓</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">شكراً</h3>
+            <p class="text-lg text-gray-600 mb-4">Thank you</p>
+            <p id="successEmployeeName" class="text-xl text-blue-600 font-semibold mb-4"></p>
+            <p class="text-gray-700 mb-2">تم تسجيل المنتجات المصروفة بنجاح</p>
+            <p class="text-gray-500 text-sm">Products have been successfully recorded</p>
+            <button onclick="closeSuccessModal()" class="mt-6 bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                موافق - OK
+            </button>
+        </div>
+    </div>
 
-<!-- Product Management Section -->
-<div id="productManagementSection" class="hidden bg-white rounded-lg shadow-lg p-6">
-<h3 class="text-xl font-bold mb-2">إدارة المنتجات</h3>
-<p class="text-gray-600 mb-4">Product Management</p>
-<!-- Excel Upload -->
-<div class="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg bg-blue-50">
-<h4 class="font-bold text-lg mb-3 text-blue-800">رفع ملف الإكسل - Upload Excel File</h4>
-<input type="file" id="excelFile" accept=".xlsx,.xls" class="mb-4 w-full">
-<button onclick="uploadExcel()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all font-semibold">
- 📁 رفع الملف - Upload File
-</button>
-<div class="mt-4 p-3 bg-white rounded border-l-4 border-blue-500">
-<h5 class="font-semibold text-gray-800 mb-2">العناوين المطلوبة في ملف الإكسل:</h5>
-<p class="text-sm text-gray-700 mb-1">Required columns in Excel file:</p>
-<ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
-<li><strong>name ar</strong> أو <strong>الاسم العربي</strong> - الاسم بالعربية</li>
-<li><strong>name en</strong> أو <strong>الاسم الإنجليزي</strong> - الاسم بالإنجليزية</li>
-<li><strong>SKU</strong> أو <strong>رمز المنتج</strong> - رمز المنتج الفريد</li>
-<li><strong>unit</strong> أو <strong>الوحدة</strong> - وحدة القياس (كيلو، جرام، حبة، لتر، إلخ)</li>
-</ul>
-<p class="text-xs text-blue-600 mt-2">💡 يمكن استخدام أي من هذه الأسماء للأعمدة</p>
-<p class="text-xs text-blue-500">You can use any of these column names</p>
-</div>
-</div>
-<!-- Products Table -->
-<div class="overflow-x-auto">
-<table class="w-full border-collapse border border-gray-300">
-<thead>
-<tr class="bg-gray-100">
-<th class="border border-gray-300 px-4 py-2">الصورة<br><span class="text-xs font-normal">Image</span></th>
-<th class="border border-gray-300 px-4 py-2">الاسم العربي<br><span class="text-xs font-normal">Arabic Name</span></th>
-<th class="border border-gray-300 px-4 py-2">الاسم الإنجليزي<br><span class="text-xs font-normal">English Name</span></th>
-<th class="border border-gray-300 px-4 py-2">SKU</th>
-<th class="border border-gray-300 px-4 py-2">الوحدة<br><span class="text-xs font-normal">Unit</span></th>
-<th class="border border-gray-300 px-4 py-2">الإجراءات<br><span class="text-xs font-normal">Actions</span></th>
-</tr>
-</thead>
-<tbody id="productsTableBody">
-<!-- Products will be loaded here -->
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden min-h-screen bg-gray-100">
+        <header class="bg-white shadow-lg p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">لوحة الإدارة</h2>
+                    <p class="text-gray-600">Admin Panel</p>
+                </div>
+                <button onclick="hideAdminPanel()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                    إغلاق - Close
+                </button>
+            </div>
+        </header>
 
-<!-- Hidden Print Area -->
-<div id="printArea" class="print-area hidden">
-<!-- Print content will be generated here -->
-</div>
+        <div class="max-w-7xl mx-auto p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <button onclick="alert('خاصية التقارير غير متوفرة. تم تعطيلها لأنها تعتمد على نظام قاعدة بيانات سابق.')" class="bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
+                    <h3 class="text-xl font-bold mb-2">تقارير الصرف</h3>
+                    <p class="text-blue-100 mb-2">Expense Reports</p>
+                    <p class="text-sm">عرض جميع عمليات الصرف</p>
+                    <p class="text-xs text-blue-200">View all expense operations</p>
+                </button>
+                <button onclick="alert('خاصية إدارة المنتجات غير متوفرة. تم تعطيلها لأنها تعتمد على نظام قاعدة بيانات سابق.')" class="bg-green-500 text-white p-6 rounded-lg hover:bg-green-600 transition-all transform hover:scale-105">
+                    <h3 class="text-xl font-bold mb-2">منتجات الصرف</h3>
+                    <p class="text-green-100 mb-2">Product Management</p>
+                    <p class="text-sm">إدارة المنتجات المتاحة</p>
+                    <p class="text-xs text-green-200">Manage available products</p>
+                </button>
+            </div>
+            
+            <!-- Admin panel sections removed as they are no longer supported by the Foodics API integration -->
+            <div id="reportsSection" class="hidden"></div>
+            <div id="productManagementSection" class="hidden"></div>
+        </div>
+    </div>
 
-<script>
-// Firebase Configuration
-const firebaseConfig = {
-apiKey: "AIzaSyCjpFIrv8oR76TILJ_jPviF7NNbJnRoYXQ",
-authDomain: "makhazin-3870e.firebaseapp.com",
-databaseURL: "https://makhazin-3870e-default-rtdb.firebaseio.com",
-projectId: "makhazin-3870e",
-storageBucket: "makhazin-3870e.firebasestorage.app",
-messagingSenderId: "582049653395",
-appId: "1:582049653395:web:33c87f77799ca1bc112366",
-measurementId: "G-70JKFQ4K3F"
-};
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const storage = firebase.storage();
-// Foodics API Configuration - تم تحديثها
-const foodicsConfig = {
-  accessToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI4ZjllYjNmNi02ZWZhLTRmZWYtODk1ZS1kMWJjNDRiYTQ4MWQiLCJqdGkiOiJhZjUwZmU3OWYzYTNhNzM0MTg2ZDYyZWYxMmRlYzQyYjY1YmIzNzdlNzk5MWVjN2VjZjhhMThkNTRhMWM0NTYwNThmODNiYjdhZWM1YTNhZSIsImlhdCI6MTc1NzM0Mjg4Mi42MjY3MywibmJmIjoxNzU3MzQyODgyLjYyNjczLCJleHAiOjE5MTUxMDkyODIuNTk1NTI3LCJzdWIiOiI5ZjkyODA1NC1mZTlkLTRmNzMtYjVhOC1iMjNmZjZjN2FlMmYiLCJzY29wZXMiOlsiZ2VuZXJhbC5yZWFkIiwiaW52ZW50b3J5LnRyYW5zYWN0aW9ucy5yZWFkIiwiaW52ZW50b3J5LnNldHRpbmdzLnJlYWQiLCJpbnZlbnRvcnkuc2V0dGluZ3Mud3JpdGUiLCJpbnZlbnRvcnkudHJhbnNhY3Rpb25zLndyaXRlIl0sImJ1c2luZXNzIjoiOWY5MjgwNTUtMGQ5MC00NTYzLTgyMjItNzNlMWJhMmU4NGE4IiwicmVmZXJlbmNlIjoiMjQ2MDI4In0.baJpKGjlCaa2fmegEA1NVAVYpMvO5-zwmHN_7neRnkJ0cr9534sSBH3ZS42rzkdVEi8L-CH16AN9APmcUROrQiMH7RfCnDWldVCo7cM5DiDc8nuh2xqp4UjIWzzfkeBf8vMf9AAuDIBGFgbExaHuJaX8iixvA5V2LWrKtc0hc5NA2gxJNk6vJcdF08z_Xx3iNVvgje3heidklWF-Im2nsdaTF9iopjyCs3SuAFIWwjYqVs_otCKbhGW_8NHcUYXkFIzsvnCgNuGOATofgPV4Y48w57oc6o1uTGwYjqwxT6JtxrhT0EnNFBeeR2ueAXrG4FlFZAYMyCqGTk7DPwDCFWa2J59P9uzqYcbSaf59E3AOkP4Yp3vipDAnE-rP1kmEBPsp9jYtbMUIrQI0wP6Yh-Ni-UCTXKOwnMNRxXutS2DIxpWmFRZw_FefXEOKRVmNxY7T5s4nPRGxnIkCRYJYJQmrH2hfXLXhf1xJ9LG_38S_i0tYaGDR356F2XRnhl0d7ecBVOxaUkit1LAddYLpa6PQKUOt38OFeBLHayOtCgTlxc5TVFFGbysVVgqUVq7GgM-58Z9yrzvSk2zR55oX2Mha-vm8_ydm-JxnhseDF6iHaRW7Hrg_2FbTWyMUiBkuX40EL47vQ2nfY2yZ-tGMxJRt4iNjhd6ccATZQ7VUORM",
-  baseUrl: "https://api.foodics.com/v5"
-};
-// Employee codes with pronunciations
-const employees = {
-'1001': { name: 'عايدة', pronunciation: 'Ayda' },
-'1002': { name: 'سارة', pronunciation: 'Sarah' },
-'1003': { name: 'اوماجي', pronunciation: 'Omaji' },
-'1004': { name: 'شاكيلا', pronunciation: 'Shakila' },
-'1005': { name: 'محمود', pronunciation: 'Mahmoud' },
-'1006': { name: 'جون', pronunciation: 'John' },
-'1007': { name: 'جوهاري', pronunciation: 'Johari' },
-'1008': { name: 'ازيل', pronunciation: 'Azil' },
-'1009': { name: 'رمزي', pronunciation: 'Ramzi' },
-'1010': { name: 'رانيا', pronunciation: 'Rania' },
-'1011': { name: 'اسماء', pronunciation: 'Asma' },
-'1012': { name: 'فيروز', pronunciation: 'Firouz' },
-'1013': { name: 'ناصر', pronunciation: 'Nasser' },
-'1014': { name: 'يوسف', pronunciation: 'Youssef' },
-'1015': { name: 'نعيم', pronunciation: 'Naeem' },
-'1016': { name: 'أحمد', pronunciation: 'Ahmed' },
-'1017': { name: 'نوزيا', pronunciation: 'Nozia' },
-'1018': { name: 'اسحاق', pronunciation: 'Ishaq' }
- };
-// Global variables
-let currentEmployee = null;
-let currentLanguage = 'ar';
-let cart = [];
-let products = [];
-let currentProduct = null;
-let clickCount = 0;
-let selectedProducts = [];
+    <!-- Hidden Print Area -->
+    <div id="printArea" class="print-area hidden">
+        <!-- Print content will be generated here -->
+    </div>
 
-// Helper function to show/hide loading modal
-function showLoading(show) {
-  const modal = document.getElementById('loadingModal');
-  if (show) {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  } else {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
-}
+    <script>
+        // Foodics API Configuration
+        const foodicsConfig = {
+            // Note: In a real application, this token should be stored securely on the server side, not hardcoded here.
+            accessToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI4ZjllYjNmNi02ZWZhLTRmZWYtODk1ZS1kMWJjNDRiYTQ4MWQiLCJqdGkiOiJhZjUwZmU3OWYzYTNhNzM0MTg2ZDYyZWYxMmRlYzQyYjY1YmIzNzdlNzk5MWVjN2VjZjhhMThkNTRhMWM0NTYwNThmODNiYjdhZWM1YTNhZSIsImlhdCI6MTc1NzM0Mjg4Mi42MjY3MywibmJmIjoxNzU3MzQyODgyLjYyNjczLCJleHAiOjE5MTUxMDkyODIuNTk1NTg3LCJzdWIiOiI5ZjkyODA1NC1mZTlkLTRmNzMtYjVhOC1iMjNmZjZjN2FlMmYiLCJzY29wZXMiOlsiZ2VuZXJhbC5yZWFkIiwiaW52ZW50b3J5LnRyYW5zYWN0aW9ucy5yZWFkIiwiaW52ZW50b3J5LnNldHRpbmdzLnJlYWQiLCJpbnZlbnRvcnkuc2V0dGluZ3Mud3JpdGUiLCJpbnZlbnRvcnkudHJhbnNhY3Rpb25zLndyaXRlIl0sImJ1c2luZXNzIjoiOWY5MjgwNTUtMGQ5MC00NTYzLTgyMjItNzNlMWJhMmU4NGE4IiwicmVmZXJlbmNlIjoiMjQ2MDI4In0.baJpKGjlCaa2fmegEA1NVAVYpMvO5-zwmHN_7neRnkJ0cr9534sSBH3ZS42rzkdVEi8L-CH16AN9APmcUROrQiMH7RfCnDWldVCo7cM5DiDc8nuh2xqp4UjIWzzfkeBf8vMf9AAuDIBGFgbExaHuJaX8iixvA5V2LWrKtc0hc5NA2gxJNk6vJcdF08z_Xx3iNVvgje3heidklWF-Im2nsdaTF9iopjyCs3SuAFIWwjYqVs_otCKbhGW_8NHcUYXkFIzsvnCgNuGOATofgPV4Y48w57oc6o1uTGwYjqwxT6JtxrhT0EnNFBeeR2ueAXrG4FlFZAYMyCqGTk7DPwDCFWa2J59P9uzqYcbSaf59E3AOkP4Yp3vipDAnE-rP1kmEBPsp9jYtbMUIrQI0wP6Yh-Ni-UCTXKOwnMNRxXutS2DIxpWmFRZw_FefXEOKRVmNxY7T5s4nPRGxnIkCRYJYJQmrH2hfXLXhf1xJ9LG_38S_i0tYaGDR356F2XRnhl0d7ecBVOxaUkit1LAddYLpa6PQKUOt38OFeBLHayOtCgTlxc5TVFFGbysVVgqUVq7GgM-58Z9yrzvSk2zR55oX2Mha-vm8_ydm-JxnhseDF6iHaRW7Hrg_2FbTWyMUiBkuX40EL47vQ2nfY2yZ-tGMxJRt4iNjhd6ccATZQ7VUORM",
+            baseUrl: "https://api-sandbox.foodics.com/v5" // Using sandbox URL as per documentation
+        };
 
-// Foodics API Call Helper
-// A reusable function to make calls to the Foodics API with proper headers
-async function foodicsApiCall(endpoint, options = {}) {
-  const headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${foodicsConfig.accessToken}`
-  };
-  const url = `${foodicsConfig.baseUrl}${endpoint}`;
-  try {
-    const response = await fetch(url, { ...options, headers });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Foodics API Error: ${response.status} - ${JSON.stringify(errorData)}`);
-    }
-    return response.json();
-  } catch (error) {
-    console.error('Error in foodicsApiCall:', error);
-    throw error;
-  }
-}
-// Language system
-function toggleLanguage() {
-currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
-document.documentElement.lang = currentLanguage;
-document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
-document.getElementById('langText').textContent = currentLanguage === 'ar' ? 'English' : 'العربية';
-// Update all translatable elements
-document.querySelectorAll('[data-ar]').forEach(element => {
-if (element.tagName === 'INPUT' && element.hasAttribute('data-ar-placeholder')) {
-element.placeholder = currentLanguage === 'ar' ? element.getAttribute('data-ar-placeholder') : element.getAttribute('data-en-placeholder');
- } else {
-element.textContent = currentLanguage === 'ar' ? element.getAttribute('data-ar') : element.getAttribute('data-en');
- }
- });
- }
-// Admin access (5 clicks)
-document.addEventListener('click', function() {
-if (document.getElementById('loginScreen').style.display !== 'none') {
-clickCount++;
-if (clickCount >= 5) {
-document.getElementById('adminBtn').classList.remove('hidden');
-clickCount = 0;
- }
-setTimeout(() => { clickCount = 0; }, 2000);
- }
- });
-// Login function
-function login() {
-const code = document.getElementById('employeeCode').value;
-if (employees[code]) {
-currentEmployee = {
-code: code,
-name: employees[code].name,
-pronunciation: employees[code].pronunciation
- };
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('mainScreen').classList.remove('hidden');
-document.getElementById('employeeName').innerHTML = `
- <div class="text-xl text-blue-600 font-semibold">${currentEmployee.name}</div>
- <div class="text-sm text-gray-500">(${currentEmployee.pronunciation})</div>
- `;
-loadProducts();
- } else {
-alert(currentLanguage === 'ar' ? 'رمز الدخول غير صحيح' : 'Invalid access code');
- }
- }
-// Logout function
-function logout() {
-currentEmployee = null;
-cart = [];
-document.getElementById('mainScreen').classList.add('hidden');
-document.getElementById('loginScreen').classList.remove('hidden');
-document.getElementById('employeeCode').value = '';
-document.getElementById('floatingCart').classList.add('hidden');
- }
-// Load products from Foodics API
-async function loadProducts() {
-  showLoading(true);
-  try {
-    const data = await foodicsApiCall('/products');
-    products = data.data.map(item => ({
-      id: item.uuid,
-      nameAr: item.name,
-      nameEn: item.name_localization,
-      sku: item.sku,
-      unit: item.unit_type // Assuming this field exists
-    }));
-    displayProducts(products);
-    showLoading(false);
-  } catch (error) {
-    console.error('Error loading products from Foodics:', error);
-    showLoading(false);
-    alert('حدث خطأ في تحميل المنتجات من Foodics');
-  }
-}
-// Display products
-function displayProducts(productsToShow) {
-const grid = document.getElementById('productsGrid');
-grid.innerHTML = '';
-productsToShow.forEach(product => {
-const productCard = document.createElement('div');
-productCard.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden';
-productCard.innerHTML = `
- <div class="aspect-square bg-gray-100 flex items-center justify-center">
- <img src="${product.image || 'https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image'}"
- alt="${product.nameAr}"
- class="w-full h-full object-cover"
- onerror="this.src='https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image'">
- </div>
- <div class="p-4">
- <h3 class="font-bold text-lg mb-1 text-gray-800">${product.nameAr}</h3>
- <p class="text-gray-600 text-sm mb-1">${product.nameEn}</p>
- <p class="text-blue-600 text-xs mb-3 font-medium">الوحدة: ${product.unit || 'غير محدد'}</p>
- <button onclick="showQuantityModal('${product.id}')"
- class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
- إضافة - Add
- </button>
- </div>
- `;
-grid.appendChild(productCard);
- });
- }
-// Search products
-function searchProducts() {
-const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-const filteredProducts = products.filter(product =>
-product.nameAr.toLowerCase().includes(searchTerm) ||
-product.nameEn.toLowerCase().includes(searchTerm) ||
-product.sku.toLowerCase().includes(searchTerm)
- );
-displayProducts(filteredProducts);
- }
-// Show quantity modal
-function showQuantityModal(productId) {
-currentProduct = products.find(p => p.id === productId);
-if (currentProduct) {
-document.getElementById('modalProductImage').src = currentProduct.image || 'https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image';
-document.getElementById('modalProductName').innerHTML = `
- <div class="text-xl font-bold text-gray-800">${currentProduct.nameAr}</div>
- <div class="text-lg text-gray-600">${currentProduct.nameEn}</div>
- `;
-document.getElementById('quantityInput').value = 1;
-document.getElementById('quantityModal').classList.remove('hidden');
-document.getElementById('quantityModal').classList.add('flex');
- }
- }
-// Close quantity modal
-function closeQuantityModal() {
-document.getElementById('quantityModal').classList.add('hidden');
-document.getElementById('quantityModal').classList.remove('flex');
-currentProduct = null;
- }
-// Add to cart
-function addToCart() {
-const quantity = parseFloat(document.getElementById('quantityInput').value);
-if (currentProduct && quantity > 0) {
-const existingItem = cart.find(item => item.id === currentProduct.id);
-if (existingItem) {
-existingItem.quantity += quantity;
- } else {
-cart.push({
- ...currentProduct,
-quantity: quantity
- });
- }
-updateCartUI();
-closeQuantityModal();
-// Show floating cart button
-document.getElementById('floatingCart').classList.remove('hidden');
- }
- }
-// Update cart UI
-function updateCartUI() {
-const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-document.getElementById('cartCount').textContent = cartCount.toFixed(1);
- }
-// Show cart
-function showCart() {
-const cartItems = document.getElementById('cartItems');
-cartItems.innerHTML = '';
-cart.forEach((item, index) => {
-const cartItem = document.createElement('div');
-cartItem.className = 'flex items-center space-x-4 space-x-reverse p-4 border rounded-lg';
-cartItem.innerHTML = `
- <img src="${item.image || 'https://via.placeholder.com/80x80/E5E7EB/9CA3AF?text=No+Image'}"
- alt="${item.nameAr}"
- class="w-16 h-16 object-cover rounded">
- <div class="flex-1">
- <h4 class="font-semibold">${item.nameAr}</h4>
- <p class="text-gray-600 text-sm">${item.nameEn}</p>
- <p class="text-blue-600 text-xs">الوحدة: ${item.unit || 'غير محدد'}</p>
- </div>
- <div class="flex items-center space-x-2 space-x-reverse">
- <button onclick="updateCartQuantity(${index}, -0.1)" class="bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition-all text-xs">-</button>
- <span class="font-bold text-lg px-3">${item.quantity}</span>
- <button onclick="updateCartQuantity(${index}, 0.1)" class="bg-green-500 text-white w-8 h-8 rounded-full hover:bg-green-600 transition-all text-xs">+</button>
- </div>
- `;
-cartItems.appendChild(cartItem);
- });
-document.getElementById('cartModal').classList.remove('hidden');
-document.getElementById('cartModal').classList.add('flex');
- }
-// Update cart quantity
-function updateCartQuantity(index, change) {
-cart[index].quantity = Math.round((cart[index].quantity + change) * 10) / 10;
-if (cart[index].quantity <= 0) {
-cart.splice(index, 1);
- }
-updateCartUI();
-if (cart.length === 0) {
-document.getElementById('floatingCart').classList.add('hidden');
-closeCart();
- } else {
-showCart();
- }
- }
-// Close cart
-function closeCart() {
-document.getElementById('cartModal').classList.add('hidden');
-document.getElementById('cartModal').classList.remove('flex');
- }
+        // Employee codes with pronunciations
+        const employees = {
+            '1001': { name: 'عايدة', pronunciation: 'Ayda' },
+            '1002': { name: 'سارة', pronunciation: 'Sarah' },
+            '1003': { name: 'اوماجي', pronunciation: 'Omaji' },
+            '1004': { name: 'شاكيلا', pronunciation: 'Shakila' },
+            '1005': { name: 'محمود', pronunciation: 'Mahmoud' },
+            '1006': { name: 'جون', pronunciation: 'John' },
+            '1007': { name: 'جوهاري', pronunciation: 'Johari' },
+            '1008': { name: 'ازيل', pronunciation: 'Azil' },
+            '1009': { name: 'رمزي', pronunciation: 'Ramzi' },
+            '1010': { name: 'رانيا', pronunciation: 'Rania' },
+            '1011': { name: 'اسماء', pronunciation: 'Asma' },
+            '1012': { name: 'فيروز', pronunciation: 'Firouz' },
+            '1013': { name: 'ناصر', pronunciation: 'Nasser' },
+            '1014': { name: 'يوسف', pronunciation: 'Youssef' },
+            '1015': { name: 'نعيم', pronunciation: 'Naeem' },
+            '1016': { name: 'أحمد', pronunciation: 'Ahmed' },
+            '1017': { name: 'نوزيا', pronunciation: 'Nozia' },
+            '1018': { name: 'اسحاق', pronunciation: 'Ishaq' }
+        };
 
-// Finish order - updated to use Foodics API
-async function finishOrder() {
-  if (cart.length === 0) return;
-  closeCart();
-  showLoading(true);
-  try {
-    const items = cart.map(item => ({
-      product_uuid: item.id,
-      quantity: item.quantity,
-      unit: item.unit
-    }));
-    // Make a single inventory transaction API call to Foodics
-    await foodicsApiCall('/inventory/transactions', {
-      method: 'POST',
-      body: JSON.stringify({
-        type: 'consumption', // Assuming 'consumption' is the correct type
-        notes: `Dispense by ${currentEmployee.name}`,
-        items: items
-      })
-    });
-    // If successful, save order to Firebase for historical record
-    const orderData = {
-      employee: currentEmployee,
-      items: cart,
-      timestamp: new Date().toISOString(),
-      date: new Date().toLocaleDateString('en-GB'),
-      time: new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      })
-    };
-    await database.ref('orders').push(orderData);
-    // Clear cart and show success modal
-    cart = [];
-    updateCartUI();
-    document.getElementById('floatingCart').classList.add('hidden');
-    showLoading(false);
-    document.getElementById('successEmployeeName').innerHTML = `
-      <div class="text-xl text-blue-600 font-semibold">${currentEmployee.name}</div>
-      <div class="text-sm text-gray-500">(${currentEmployee.pronunciation || 'N/A'})</div>
-    `;
-    document.getElementById('successModal').classList.remove('hidden');
-    document.getElementById('successModal').classList.add('flex');
-  } catch (error) {
-    console.error('Error processing order with Foodics:', error);
-    showLoading(false);
-    alert(`حدث خطأ في معالجة الطلب: ${error.message}`);
-  }
-}
-// Close success modal
-function closeSuccessModal() {
-document.getElementById('successModal').classList.add('hidden');
-document.getElementById('successModal').classList.remove('flex');
-logout();
- }
-// Admin functions
-function showAdminPanel() {
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('mainScreen').classList.add('hidden');
-document.getElementById('adminPanel').classList.remove('hidden');
-loadEmployeeFilter();
- }
-function hideAdminPanel() {
-document.getElementById('adminPanel').classList.add('hidden');
-document.getElementById('loginScreen').classList.remove('hidden');
-document.getElementById('reportsSection').classList.add('hidden');
-document.getElementById('productManagementSection').classList.add('hidden');
-document.getElementById('adminBtn').classList.add('hidden');
- }
-function showReports() {
-document.getElementById('reportsSection').classList.remove('hidden');
-document.getElementById('productManagementSection').classList.add('hidden');
-loadReports();
-loadProductFilter();
- }
-function showProductManagement() {
-document.getElementById('productManagementSection').classList.remove('hidden');
-document.getElementById('reportsSection').classList.add('hidden');
-loadProductsTable();
- }
-// Load employee filter
-function loadEmployeeFilter() {
-const select = document.getElementById('employeeFilter');
-select.innerHTML = '<option value="">' + (currentLanguage === 'ar' ? 'جميع الموظفين' : 'All Employees') + '</option>';
-Object.entries(employees).forEach(([code, employee]) => {
-const option = document.createElement('option');
-option.value = employee.name;
-option.textContent = `${employee.name} (${employee.pronunciation})`;
-select.appendChild(option);
- });
- }
-// Load product filter
-function loadProductFilter() {
-displayProductFilterOptions(products);
- }
-// Display product filter options
-function displayProductFilterOptions(productsToShow) {
-const container = document.getElementById('productFilterOptions');
-container.innerHTML = '';
-productsToShow.forEach(product => {
-const checkbox = document.createElement('div');
-checkbox.className = 'flex items-center space-x-2 space-x-reverse p-2 hover:bg-gray-50 rounded product-filter-item';
-checkbox.innerHTML = `
- <input type="checkbox" id="product_${product.id}" value="${product.id}"
- onchange="updateProductFilter()" class="rounded"
-${selectedProducts.includes(product.id) ? 'checked' : ''}>
- <label for="product_${product.id}" class="flex-1 cursor-pointer text-sm">
- <span class="font-medium">${product.nameAr}</span>
- <span class="text-gray-500"> - ${product.nameEn}</span>
- <span class="text-xs text-blue-600 block">${product.sku}</span>
- </label>
- `;
-container.appendChild(checkbox);
- });
- }
-// Search in product filter
-function searchInProductFilter() {
-const searchTerm = document.getElementById('productFilterSearch').value.toLowerCase();
-const filteredProducts = products.filter(product =>
-product.nameAr.toLowerCase().includes(searchTerm) ||
-product.nameEn.toLowerCase().includes(searchTerm) ||
-product.sku.toLowerCase().includes(searchTerm)
- );
-displayProductFilterOptions(filteredProducts);
- }
-// Toggle product filter dropdown
-function toggleProductFilter() {
-const dropdown = document.getElementById('productFilterDropdown');
-dropdown.classList.toggle('hidden');
- }
-// Update product filter
-function updateProductFilter() {
-const checkboxes = document.querySelectorAll('#productFilterOptions input[type="checkbox"]:checked');
-selectedProducts = Array.from(checkboxes).map(cb => cb.value);
-const text = document.getElementById('productFilterText');
-if (selectedProducts.length === 0) {
-text.textContent = 'اختر المنتجات - Select Products';
-text.className = 'text-gray-500 flex-1';
- } else {
-const selectedNames = selectedProducts.map(id => {
-const product = products.find(p => p.id === id);
-return product ? product.nameAr : '';
- }).filter(name => name);
-if (selectedNames.length <= 2) {
-text.textContent = selectedNames.join(', ');
- } else {
-text.textContent = `${selectedNames.length} منتجات محددة - ${selectedNames.length} products selected`;
- }
-text.className = 'text-blue-600 flex-1 font-medium';
- }
- }
-// Select all products
-function selectAllProducts() {
-const checkboxes = document.querySelectorAll('#productFilterOptions input[type="checkbox"]');
-checkboxes.forEach(cb => cb.checked = true);
-updateProductFilter();
- }
-// Clear product filter
-function clearProductFilter() {
-const checkboxes = document.querySelectorAll('#productFilterOptions input[type="checkbox"]');
-checkboxes.forEach(cb => cb.checked = false);
-selectedProducts = [];
-updateProductFilter();
- }
-// Clear all filters
-function clearAllFilters() {
-// Clear employee filter
-document.getElementById('employeeFilter').value = '';
-// Clear date filter
-document.getElementById('dateFilter').value = '';
-// Clear product filter
-selectedProducts = [];
-const checkboxes = document.querySelectorAll('#productFilterOptions input[type="checkbox"]');
-checkboxes.forEach(cb => cb.checked = false);
-updateProductFilter();
-// Clear product search
-document.getElementById('productFilterSearch').value = '';
-displayProductFilterOptions(products);
-// Apply filters to show all reports
-applyFilters();
- }
-// Load reports
-async function loadReports() {
-try {
-const snapshot = await database.ref('orders').once('value');
-const orders = [];
-snapshot.forEach(child => {
-orders.push({ id: child.key, ...child.val() });
- });
-displayReports(orders);
- } catch (error) {
-console.error('Error loading reports:', error);
- }
- }
-// Display reports
-function displayReports(orders) {
-const tbody = document.getElementById('reportsTableBody');
-tbody.innerHTML = '';
-let rowNumber = 1;
-orders.forEach(order => {
-// Create a row for each product in the order
-order.items.forEach((item) => {
-const row = document.createElement('tr');
-row.innerHTML = `
- <td class="border border-gray-300 px-4 py-2 text-center font-bold">${rowNumber}</td>
- <td class="border border-gray-300 px-4 py-2">
- <div class="font-medium">${order.employee.name}</div>
- <div class="text-sm text-gray-600">(${order.employee.pronunciation || 'N/A'})</div>
- </td>
- <td class="border border-gray-300 px-4 py-2">${order.date}</td>
- <td class="border border-gray-300 px-4 py-2">${order.time}</td>
- <td class="border border-gray-300 px-4 py-2">
- <div class="font-medium">${item.nameAr}</div>
- <div class="text-sm text-gray-600">${item.nameEn}</div>
- <div class="text-xs text-blue-600">${item.sku}</div>
- </td>
- <td class="border border-gray-300 px-4 py-2 text-center font-bold">${item.quantity}</td>
- <td class="border border-gray-300 px-4 py-2 text-center">${item.unit || 'غير محدد'}</td>
- `;
-tbody.appendChild(row);
-rowNumber++;
- });
- });
- }
-// Apply filters
-function applyFilters() {
-const employeeFilter = document.getElementById('employeeFilter').value;
-const dateFilter = document.getElementById('dateFilter').value;
-database.ref('orders').once('value').then(snapshot => {
-const orders = [];
-snapshot.forEach(child => {
-const order = { id: child.key, ...child.val() };
-let include = true;
-// Employee filter
-if (employeeFilter && order.employee.name !== employeeFilter) {
-include = false;
- }
-// Date filter
-if (dateFilter && order.date !== new Date(dateFilter).toLocaleDateString('en-GB')) {
-include = false;
- }
-// Product filter
-if (selectedProducts.length > 0) {
-const hasSelectedProduct = order.items.some(item =>
-selectedProducts.includes(item.id)
- );
-if (!hasSelectedProduct) {
-include = false;
- }
- }
-if (include) {
-orders.push(order);
- }
- });
-displayReports(orders);
- });
- }
+        // Global variables
+        let currentEmployee = null;
+        let cart = [];
+        let products = [];
+        let currentProduct = null;
+        let clickCount = 0;
 
-// Load products table for Admin
-async function loadProductsTable() {
-  showLoading(true);
-  try {
-    const data = await foodicsApiCall('/products');
-    products = data.data.map(item => ({
-      id: item.uuid,
-      nameAr: item.name,
-      nameEn: item.name_localization,
-      sku: item.sku,
-      unit: item.unit_type // Assuming this field exists
-    }));
-    const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '';
-    products.forEach(product => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td class="border border-gray-300 px-4 py-2">
-          <div class="w-16 h-16 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-all"
-               onclick="uploadProductImage('${product.id}')"
-               ondrop="handleImageDrop(event, '${product.id}')"
-               ondragover="event.preventDefault()">
-            ${product.image ?
-              `<img src="${product.image}" alt="${product.nameAr}" class="w-full h-full object-cover rounded">` :
-              '<span class="text-xs text-gray-500">صورة</span>'
+        // Admin access (5 clicks)
+        document.addEventListener('click', function() {
+            if (document.getElementById('loginScreen').style.display !== 'none') {
+                clickCount++;
+                if (clickCount >= 5) {
+                    document.getElementById('adminBtn').classList.remove('hidden');
+                    clickCount = 0;
+                }
+                setTimeout(() => { clickCount = 0; }, 2000);
             }
-          </div>
-        </td>
-        <td class="border border-gray-300 px-4 py-2">${product.nameAr}</td>
-        <td class="border border-gray-300 px-4 py-2">${product.nameEn}</td>
-        <td class="border border-gray-300 px-4 py-2">${product.sku}</td>
-        <td class="border border-gray-300 px-4 py-2 text-center">${product.unit || 'غير محدد'}</td>
-        <td class="border border-gray-300 px-4 py-2">
-          <button onclick="deleteProduct('${product.id}')" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition-all">
-            ${currentLanguage === 'ar' ? 'حذف' : 'Delete'}
-          </button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
-    showLoading(false);
-  } catch (error) {
-    console.error('Error loading products for admin table:', error);
-    showLoading(false);
-    alert('حدث خطأ في تحميل المنتجات للوحة الإدارة');
-  }
-}
-// Upload Excel file - updated to use Foodics API
-async function uploadExcel() {
-  const fileInput = document.getElementById('excelFile');
-  const file = fileInput.files[0];
-  if (!file) {
-    alert('يرجى اختيار ملف إكسل - Please select an Excel file');
-    return;
-  }
-  showLoading(true);
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      if (jsonData.length === 0) {
-        alert('الملف فارغ أو لا يحتوي على بيانات - File is empty or contains no data');
-        showLoading(false);
-        return;
-      }
-      let addedCount = 0;
-      let errorCount = 0;
-      for (const row of jsonData) {
-        try {
-          const nameAr = row['name ar'] || row['Name AR'] || row['الاسم العربي'] || row['اسم عربي'] || '';
-          const nameEn = row['name en'] || row['Name EN'] || row['الاسم الإنجليزي'] || row['اسم انجليزي'] || '';
-          const sku = row['SKU'] || row['sku'] || row['Sku'] || row['رمز المنتج'] || '';
-          const unit = row['unit'] || row['Unit'] || row['UNIT'] || row['الوحدة'] || row['وحدة'] || 'غير محدد';
-          if (!nameAr || !nameEn || !sku) {
-            console.warn(`Row ${index + 1}: Missing required data.`);
-            errorCount++;
-            continue;
-          }
-          // Create product via Foodics API
-          // Assuming the endpoint for creating products is /products and it accepts a POST request
-          await foodicsApiCall('/products', {
-            method: 'POST',
-            body: JSON.stringify({
-              name: nameAr.toString().trim(),
-              name_localization: nameEn.toString().trim(),
-              sku: sku.toString().trim(),
-              unit_type: unit.toString().trim()
-            })
-          });
-          addedCount++;
-        } catch (error) {
-          console.error(`Error processing row:`, error);
-          errorCount++;
-        }
-      }
-      showLoading(false);
-      let message = `تم إضافة ${addedCount} منتج بنجاح\nSuccessfully added ${addedCount} products`;
-      if (errorCount > 0) {
-        message += `\n\nتم تجاهل ${errorCount} صف بسبب أخطاء\nIgnored ${errorCount} rows due to errors`;
-      }
-      alert(message);
-      loadProductsTable(); // Refresh the products table
-      if (!document.getElementById('mainScreen').classList.contains('hidden')) {
-        loadProducts(); // Refresh main products display
-      }
-    } catch (error) {
-      console.error('Error reading Excel file:', error);
-      showLoading(false);
-      alert('خطأ في قراءة ملف الإكسل. تأكد من أن الملف صحيح ويحتوي على الأعمدة المطلوبة');
-    }
-  };
-  reader.readAsArrayBuffer(file);
-  fileInput.value = '';
-}
-// Upload product image
-function uploadProductImage(productId) {
-const input = document.createElement('input');
-input.type = 'file';
-input.accept = 'image/*';
-input.onchange = function(e) {
-const file = e.target.files[0];
-if (file) {
-handleImageFile(file, productId);
- }
- };
-input.click();
- }
-// Handle image drop
-function handleImageDrop(event, productId) {
-event.preventDefault();
-const file = event.dataTransfer.files[0];
-if (file && file.type.startsWith('image/')) {
-handleImageFile(file, productId);
- }
- }
-// Handle image file
-async function handleImageFile(file, productId) {
-try {
-// Upload to Firebase Storage
-const storageRef = storage.ref('product-images/' + productId + '/' + file.name);
-const snapshot = await storageRef.put(file);
-const downloadURL = await snapshot.ref.getDownloadURL();
-// Update product with image URL
-const productIndex = products.findIndex(p => p.id === productId);
-if (productIndex !== -1) {
-products[productIndex].image = downloadURL;
-await database.ref('products/' + productId + '/image').set(downloadURL);
-loadProductsTable();
-// Refresh main products display if visible
-if (!document.getElementById('mainScreen').classList.contains('hidden')) {
-displayProducts(products);
- }
- }
- } catch (error) {
-console.error('Error uploading image:', error);
-alert(currentLanguage === 'ar' ? 'خطأ في رفع الصورة' : 'Error uploading image');
- }
- }
-// Delete product - updated to use Foodics API
-async function deleteProduct(productId) {
-if (confirm(currentLanguage === 'ar' ? 'هل أنت متأكد من حذف هذا المنتج؟' : 'Are you sure you want to delete this product?')) {
-showLoading(true);
-try {
-await foodicsApiCall(`/products/${productId}`, {
-method: 'DELETE'
- });
-showLoading(false);
-// Remove from local products array
-products = products.filter(p => p.id !== productId);
-loadProductsTable();
-// Refresh main products display if visible
-if (!document.getElementById('mainScreen').classList.contains('hidden')) {
-displayProducts(products);
- }
- } catch (error) {
-console.error('Error deleting product:', error);
-showLoading(false);
-alert(currentLanguage === 'ar' ? `خطأ في حذف المنتج: ${error.message}` : `Error deleting product: ${error.message}`);
- }
- }
- }
-// Print reports function
-function printReports() {
-const printArea = document.getElementById('printArea');
-const reportsTable = document.getElementById('reportsTableBody');
-const employeeFilter = document.getElementById('employeeFilter').value;
-const dateFilter = document.getElementById('dateFilter').value;
-// Get current date and time
-const now = new Date();
-const currentDate = now.toLocaleDateString('en-GB');
-const currentTime = now.toLocaleTimeString('en-US', {
-hour: '2-digit',
-minute: '2-digit',
-hour12: true
- });
-// Create filter info
-let filterInfo = '';
-if (employeeFilter) {
-// Find employee pronunciation
-const employeeEntry = Object.values(employees).find(emp => emp.name === employeeFilter);
-const pronunciation = employeeEntry ? employeeEntry.pronunciation : '';
-filterInfo += `الموظف: ${employeeFilter} (${pronunciation}) | Employee: ${employeeFilter} (${pronunciation})<br>`;
- }
-if (dateFilter) {
-const formattedDate = new Date(dateFilter).toLocaleDateString('en-GB');
-filterInfo += `التاريخ: ${formattedDate} | Date: ${formattedDate}<br>`;
- }
-if (selectedProducts.length > 0) {
-const selectedNames = selectedProducts.map(id => {
-const product = products.find(p => p.id === id);
-return product ? product.nameAr : '';
- }).filter(name => name);
-filterInfo += `المنتجات: ${selectedNames.join(', ')} | Products: ${selectedNames.join(', ')}<br>`;
- }
-if (!employeeFilter && !dateFilter && selectedProducts.length === 0) {
-filterInfo = 'جميع التقارير | All Reports<br>';
- }
-// Generate print content
-printArea.innerHTML = `
- <div class="print-header">
- <h1 style="font-size: 24px; margin-bottom: 10px;">نظام إدارة المخازن</h1>
- <h2 style="font-size: 20px; margin-bottom: 10px;">Inventory Management System</h2>
- <h3 style="font-size: 18px; margin-bottom: 15px;">تقارير الصرف - Expense Reports</h3>
- <div style="font-size: 14px; color: #666;">
-${filterInfo}
- تاريخ الطباعة: ${currentDate} | Print Date: ${currentDate}<br>
- وقت الطباعة: ${currentTime} | Print Time: ${currentTime}
- </div>
- </div>
- <table class="print-table">
- <thead>
- <tr>
- <th style="width: 8%;">#</th>
- <th style="width: 16%;">الموظف<br>Employee</th>
- <th style="width: 13%;">التاريخ<br>Date</th>
- <th style="width: 13%;">الوقت<br>Time</th>
- <th style="width: 28%;">اسم المنتج<br>Product Name</th>
- <th style="width: 12%;">الكمية<br>Quantity</th>
- <th style="width: 10%;">الوحدة<br>Unit</th>
- </tr>
- </thead>
- <tbody>
-${reportsTable.innerHTML}
- </tbody>
- </table>
- <div class="print-footer">
- <p>تم إنشاء هذا التقرير بواسطة نظام إدارة المخازن</p>
- <p>This report was generated by the Inventory Management System</p>
- <p>الصفحة 1 من 1 | Page 1 of 1</p>
- </div>
- `;
-// Show print area and trigger print
-printArea.classList.remove('hidden');
-// Small delay to ensure content is rendered
-setTimeout(() => {
-window.print();
-// Hide print area after printing
-setTimeout(() => {
-printArea.classList.add('hidden');
- }, 1000);
- }, 100);
- }
-// Initialize app
-document.addEventListener('DOMContentLoaded', function() {
-document.getElementById('langToggle').addEventListener('click', toggleLanguage);
-// Enter key support for login
-document.getElementById('employeeCode').addEventListener('keypress', function(e) {
-if (e.key === 'Enter') {
-login();
- }
- });
-// Enter key support for quantity input
-document.getElementById('quantityInput').addEventListener('keypress', function(e) {
-if (e.key === 'Enter') {
-addToCart();
- }
- });
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-const dropdown = document.getElementById('productFilterDropdown');
-const trigger = e.target.closest('[onclick="toggleProductFilter()"]');
-const searchInput = document.getElementById('productFilterSearch');
-// Don't close if clicking inside dropdown or on search input
-if (!dropdown.contains(e.target) && !trigger) {
-dropdown.classList.add('hidden');
- }
- });
- });
-</script>
+        });
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.\__CF$cv$params={r:'97bfb463d4827cdb',t:'MTc1NzM0NzcwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+        // Login function
+        function login() {
+            const code = document.getElementById('employeeCode').value;
+            if (employees[code]) {
+                currentEmployee = { 
+                    code: code, 
+                    name: employees[code].name,
+                    pronunciation: employees[code].pronunciation
+                };
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainScreen').classList.remove('hidden');
+                document.getElementById('employeeName').innerHTML = `
+                    <div class="text-xl text-blue-600 font-semibold">${currentEmployee.name}</div>
+                    <div class="text-sm text-gray-500">(${currentEmployee.pronunciation})</div>
+                `;
+                loadProducts();
+            } else {
+                alert('رمز الدخول غير صحيح');
+            }
+        }
+
+        // Logout function
+        function logout() {
+            currentEmployee = null;
+            cart = [];
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('employeeCode').value = '';
+            document.getElementById('floatingCart').classList.add('hidden');
+        }
+
+        // Fetch products from Foodics API
+        async function fetchProductsFromFoodics() {
+            const endpoint = `${foodicsConfig.baseUrl}/inventory/products`;
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${foodicsConfig.accessToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+                }
+                
+                const data = await response.json();
+                return data.data; // The products are in the 'data' key
+            } catch (error) {
+                console.error('Error fetching products from Foodics:', error);
+                alert('حدث خطأ في جلب المنتجات من فودكس. يرجى مراجعة console للتفاصيل.');
+                return [];
+            }
+        }
+        
+        // Load products from Foodics and display them
+        async function loadProducts() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+            
+            products = await fetchProductsFromFoodics();
+            
+            // For demonstration, map Foodics data to our app's structure
+            // In a real scenario, you would need to map fields like name, unit, etc.
+            // For now, we assume the Foodics API returns a list of products with 'id', 'name', 'sku', 'unit', and 'image'
+            displayProducts(products);
+
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        // Display products
+        function displayProducts(productsToShow) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            
+            if (productsToShow.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-gray-500 text-lg">لا توجد منتجات لعرضها.</div>`;
+                return;
+            }
+
+            productsToShow.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden';
+                productCard.innerHTML = `
+                    <div class="aspect-square bg-gray-100 flex items-center justify-center">
+                        <img src="${product.image || 'https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image'}" 
+                             alt="${product.name_localized || product.name}" 
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image'">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1 text-gray-800">${product.name_localized || product.name || 'غير متوفر'}</h3>
+                        <p class="text-gray-600 text-sm mb-1">${product.name_localized_en || product.name || 'N/A'}</p>
+                        <p class="text-blue-600 text-xs mb-3 font-medium">الوحدة: ${product.unit_localized || 'غير محدد'}</p>
+                        <button onclick="showQuantityModal('${product.id}')" 
+                                class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
+                            إضافة - Add
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(productCard);
+            });
+        }
+
+        // Search products
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredProducts = products.filter(product => 
+                (product.name_localized && product.name_localized.toLowerCase().includes(searchTerm)) ||
+                (product.name_localized_en && product.name_localized_en.toLowerCase().includes(searchTerm)) ||
+                (product.sku && product.sku.toLowerCase().includes(searchTerm))
+            );
+            displayProducts(filteredProducts);
+        }
+
+        // Show quantity modal
+        function showQuantityModal(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            if (currentProduct) {
+                document.getElementById('modalProductImage').src = currentProduct.image || 'https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image';
+                document.getElementById('modalProductName').innerHTML = `
+                    <div class="text-xl font-bold text-gray-800">${currentProduct.name_localized || currentProduct.name}</div>
+                    <div class="text-lg text-gray-600">${currentProduct.name_localized_en || 'N/A'}</div>
+                `;
+                document.getElementById('quantityInput').value = 1;
+                document.getElementById('quantityModal').classList.remove('hidden');
+                document.getElementById('quantityModal').classList.add('flex');
+            }
+        }
+
+        // Close quantity modal
+        function closeQuantityModal() {
+            document.getElementById('quantityModal').classList.add('hidden');
+            document.getElementById('quantityModal').classList.remove('flex');
+            currentProduct = null;
+        }
+
+        // Add to cart
+        function addToCart() {
+            const quantity = parseFloat(document.getElementById('quantityInput').value);
+            if (currentProduct && quantity > 0) {
+                const existingItem = cart.find(item => item.id === currentProduct.id);
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                } else {
+                    cart.push({
+                        ...currentProduct,
+                        quantity: quantity
+                    });
+                }
+                
+                updateCartUI();
+                closeQuantityModal();
+                
+                // Show floating cart button
+                document.getElementById('floatingCart').classList.remove('hidden');
+            }
+        }
+
+        // Update cart UI
+        function updateCartUI() {
+            const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cartCount').textContent = cartCount.toFixed(1);
+        }
+
+        // Show cart
+        function showCart() {
+            const cartItems = document.getElementById('cartItems');
+            cartItems.innerHTML = '';
+            
+            cart.forEach((item, index) => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'flex items-center space-x-4 space-x-reverse p-4 border rounded-lg';
+                cartItem.innerHTML = `
+                    <img src="${item.image || 'https://via.placeholder.com/80x80/E5E7EB/9CA3AF?text=No+Image'}" 
+                         alt="${item.name_localized}" 
+                         class="w-16 h-16 object-cover rounded">
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${item.name_localized || item.name}</h4>
+                        <p class="text-gray-600 text-sm">${item.name_localized_en || 'N/A'}</p>
+                        <p class="text-blue-600 text-xs">الوحدة: ${item.unit_localized || 'غير محدد'}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <button onclick="updateCartQuantity(${index}, -0.1)" class="bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition-all text-xs">-</button>
+                        <span class="font-bold text-lg px-3">${item.quantity}</span>
+                        <button onclick="updateCartQuantity(${index}, 0.1)" class="bg-green-500 text-white w-8 h-8 rounded-full hover:bg-green-600 transition-all text-xs">+</button>
+                    </div>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+            
+            document.getElementById('cartModal').classList.remove('hidden');
+            document.getElementById('cartModal').classList.add('flex');
+        }
+
+        // Update cart quantity
+        function updateCartQuantity(index, change) {
+            cart[index].quantity = Math.round((cart[index].quantity + change) * 10) / 10;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            
+            updateCartUI();
+            
+            if (cart.length === 0) {
+                document.getElementById('floatingCart').classList.add('hidden');
+                closeCart();
+            } else {
+                showCart();
+            }
+        }
+
+        // Close cart
+        function closeCart() {
+            document.getElementById('cartModal').classList.add('hidden');
+            document.getElementById('cartModal').classList.remove('flex');
+        }
+        
+        // Update Foodics inventory
+        async function updateFoodicsInventory() {
+            const endpoint = `${foodicsConfig.baseUrl}/inventory/transactions`;
+            
+            // Build the transaction payload for Foodics API
+            // This is a simplified example. You would need to check Foodics API docs for exact payload structure.
+            const transactionItems = cart.map(item => ({
+                id: item.id, // Foodics product ID
+                sku: item.sku,
+                quantity: item.quantity,
+            }));
+            
+            const payload = {
+                items: transactionItems,
+                reference: `Makhazin-App-${currentEmployee.code}-${Date.now()}`
+            };
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${foodicsConfig.accessToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+                }
+                
+                const responseData = await response.json();
+                console.log('Foodics API Response:', responseData);
+                return true; // Indicate success
+                
+            } catch (error) {
+                console.error('Error updating Foodics inventory:', error);
+                return false; // Indicate failure
+            }
+        }
+
+        // Finish order
+        async function finishOrder() {
+            if (cart.length === 0) return;
+            
+            closeCart();
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+            
+            try {
+                const success = await updateFoodicsInventory();
+                
+                if (success) {
+                    // Clear cart
+                    cart = [];
+                    updateCartUI();
+                    document.getElementById('floatingCart').classList.add('hidden');
+                    
+                    // Show success modal
+                    document.getElementById('loadingModal').classList.add('hidden');
+                    document.getElementById('loadingModal').classList.remove('flex');
+                    
+                    document.getElementById('successEmployeeName').innerHTML = `
+                        <div class="text-xl text-blue-600 font-semibold">${currentEmployee.name}</div>
+                        <div class="text-sm text-gray-500">(${currentEmployee.pronunciation || 'N/A'})</div>
+                    `;
+                    document.getElementById('successModal').classList.remove('hidden');
+                    document.getElementById('successModal').classList.add('flex');
+                } else {
+                    document.getElementById('loadingModal').classList.add('hidden');
+                    document.getElementById('loadingModal').classList.remove('flex');
+                    alert('حدث خطأ في معالجة الطلب');
+                }
+                
+            } catch (error) {
+                console.error('Error processing order:', error);
+                document.getElementById('loadingModal').classList.add('hidden');
+                document.getElementById('loadingModal').classList.remove('flex');
+                alert('حدث خطأ في معالجة الطلب');
+            }
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+            logout();
+        }
+
+        // Admin functions
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+        }
+
+        function hideAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('adminBtn').classList.add('hidden');
+        }
+
+        // The following functions are no longer supported due to the switch from Firebase
+        function showReports() { alert('خاصية التقارير غير متوفرة. تم تعطيلها لأنها تعتمد على نظام قاعدة بيانات سابق.'); }
+        function showProductManagement() { alert('خاصية إدارة المنتجات غير متوفرة. تم تعطيلها لأنها تعتمد على نظام قاعدة بيانات سابق.'); }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enter key support for login
+            document.getElementById('employeeCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            // Enter key support for quantity input
+            document.getElementById('quantityInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addToCart();
+                }
+            });
+        });
+    </script>
+</body>
 </html>
